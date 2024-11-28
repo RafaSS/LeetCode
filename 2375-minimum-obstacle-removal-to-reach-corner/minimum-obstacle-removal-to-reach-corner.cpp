@@ -1,39 +1,32 @@
-
 class Solution {
 public:
     int minimumObstacles(vector<vector<int>>& grid) {
-        unordered_map<int, vector<int>> dirs = {
-            {0, {0, 1}}, {1, {0, -1}}, {2, {1, 0}}, {3, {-1, 0}}};
         int m = grid.size(), n = grid[0].size();
-        deque<tuple<int, int, int>> q;
-        set<pair<int, int>> visited;
+        vector<vector<int>> distance(m, vector<int>(n, INT_MAX));
+        deque<pair<int, int>> dq;
 
-        visited.insert({0, 0});
+        distance[0][0] = 0;
+        dq.push_front({0, 0});
+        vector<pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
-        q.push_front(make_tuple(0, 0, 0));
-        while (!q.empty()) {
-            auto [x, y, steps] = q.front();
-            q.pop_front();
-            if (x == m - 1 && y == n - 1) {
-                return steps;
-            }
-            for (int i = 0; i < 4; i++) {
-                int dx = dirs[i][0], dy = dirs[i][1];
+        while (!dq.empty()) {
+            auto [x, y] = dq.front();
+            dq.pop_front();
+            for (auto [dx, dy] : directions) {
                 int nx = x + dx, ny = y + dy;
-                if (nx < 0 || nx >= m || ny < 0 || ny >= n) {
-                    continue;
-                }
-                if (grid[nx][ny] == 0 &&
-                    visited.find({nx, ny}) == visited.end()) {
-                    visited.insert({nx, ny});
-                    q.push_front(make_tuple(nx, ny, steps));
-                } else if (grid[nx][ny] == 1 &&
-                           visited.find({nx, ny}) == visited.end()) {
-                    visited.insert({nx, ny});
-                    q.push_back(make_tuple(nx, ny, steps + 1));
+                if (nx >= 0 && nx < m && ny >= 0 && ny < n) {
+                    int newDist = distance[x][y] + grid[nx][ny];
+                    if (newDist < distance[nx][ny]) {
+                        distance[nx][ny] = newDist;
+                        if (grid[nx][ny] == 0) {
+                            dq.push_front({nx, ny});
+                        } else {
+                            dq.push_back({nx, ny});
+                        }
+                    }
                 }
             }
         }
-        return -1;
+        return distance[m-1][n-1];
     }
 };
